@@ -11,7 +11,7 @@
     "esmodules": ["main.js"],
     "url": "https://github.com/ManaHime/foundryvtt-parallax-tiles",
     "manifest": "https://github.com/ManaHime/foundryvtt-parallax-tiles/releases/latest/download/module.json",
-    "download": "https://github.com/ManaHime/foundryvtt-parallax-tiles/releases/download/0.0.1/foundryvtt-parallax-tiles.zip",
+    "download": "https://github.com/ManaHime/foundryvtt-parallax-tiles/releases/download/0.0.1/parallax-tiles.zip",
     "id": "parallax-tiles",
     "compatibility": {
       "minimum": 11,
