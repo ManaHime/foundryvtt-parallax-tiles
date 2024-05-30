@@ -18,5 +18,16 @@
       "verified": 11,
       "maximum": 11
     },
-    "dependencies": ["libWrapper"]
+    "relationships": {
+      "requires": [
+          {
+              "id": "lib-wrapper",
+              "type": "module",
+              "compatibility": {
+                  "minimum": "1.0.0.0",
+                  "verified": "1.12.6.0"
+              }
+          }
+      ]
+    }
   }
