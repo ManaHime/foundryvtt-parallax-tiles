@@ -4,4 +4,4 @@ Doing this gives the ability to fake a 3d camera perspective when moving the cam
 Configuration is availabe on a tile's configuration.
 
 Install file:
-https://github.com/ManaHime/foundryvtt-parallax-tiles/releases/download/latest/module.json
+https://github.com/ManaHime/foundryvtt-parallax-tiles/releases/latest/download/module.json
