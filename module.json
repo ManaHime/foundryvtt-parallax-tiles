@@ -18,5 +18,5 @@
       "verified": 11,
       "maximum": 11
     },
-    "dependencies": ["libWrapper"],
+    "dependencies": ["libWrapper"]
   }
