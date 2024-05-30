@@ -1,0 +1,20 @@
+{
+    "name": "parallax-tiles",
+    "title": "Parallax Tiles",
+    "description": "A plugin to add parallax effect to tiles.",
+    "version": "0.0.1",
+    "authors": [
+      {
+      "name": "Mana Fuwakami"
+      }
+    ],
+    "esmodules": ["main.js"],
+    "minimumCoreVersion": "11",
+    "compatibility": {
+      "minimum": 11,
+      "verified": 11,
+      "maximum": 11
+    },
+    "dependencies": ["libWrapper"],
+    "coreVersion": "11"
+  }
