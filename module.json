@@ -2,7 +2,7 @@
     "name": "parallax-tiles",
     "title": "Parallax Tiles",
     "description": "A plugin to add parallax effect to tiles.",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "authors": [
       {
       "name": "Mana Fuwakami"
@@ -11,7 +11,7 @@
     "esmodules": ["main.js"],
     "url": "https://github.com/ManaHime/foundryvtt-parallax-tiles",
     "manifest": "https://github.com/ManaHime/foundryvtt-parallax-tiles/releases/latest/download/module.json",
-    "download": "https://github.com/ManaHime/foundryvtt-parallax-tiles/releases/download/0.0.2/parallax-tiles.zip",
+    "download": "https://github.com/ManaHime/foundryvtt-parallax-tiles/releases/download/0.0.3/parallax-tiles.zip",
     "id": "parallax-tiles",
     "compatibility": {
       "minimum": 11,
