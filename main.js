@@ -71,9 +71,19 @@ function applyParallaxEffect(position) {
             if (enableParallax && !isNaN(parallaxStrength) && parallaxStrength >= -1 && parallaxStrength <= 1) {
                 const initialPosition = initialPositions.get(tile.id);
                 if (!initialPosition) return;
+
+                // Position
                 const posX = initialPosition.x + ((position.x - initialPosition.x) * parallaxStrength);
                 const posY = initialPosition.y + ((position.y - initialPosition.y) * parallaxStrength);
                 tile.mesh.position.set(posX, posY);
+                
+                // Scale
+                
+                const baseScale = 0.8333333333333334; // Original tile scale when no zoom is applied
+                const currentScale = position.scale || canvas.scene.initial.scale;
+                const scaleRatio = canvas.scene.initial.scale / currentScale;
+                const tileScale = baseScale * Math.pow(scaleRatio, parallaxStrength);
+                tile.mesh.scale.set(tileScale, tileScale);
             }
         });
     }
