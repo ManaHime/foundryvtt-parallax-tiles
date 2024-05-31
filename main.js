@@ -1,9 +1,11 @@
+const MODULE_NAME = "parallax-tiles";
+
 // Initialization hook
 Hooks.once('init', () => {
-    console.log('Parallax Tiles | Initializing Parallax Tiles plugin');
+    console.log(`${MODULE_NAME} | Initializing Parallax Tiles plugin`);
 
     // Register new fields in the tile configuration for enabling parallax and setting the parallax strength
-    game.settings.register("parallax-tiles", "enableParallax", {
+    game.settings.register(MODULE_NAME, "enableParallax", {
         name: "Enable Parallax",
         hint: "Enable or disable the parallax effect for this tile.",
         scope: "world",
@@ -12,28 +14,28 @@ Hooks.once('init', () => {
         type: Boolean
     });
 
-    game.settings.register("parallax-tiles", "parallaxStrength", {
+    game.settings.register(MODULE_NAME, "parallaxStrength", {
         name: "Parallax Strength",
         hint: "Set the parallax strength for this tile.",
         scope: "world",
         config: false,
-        default: 0.2,
+        default: 0,
         type: Number
     });
 
     // Extend the tile configuration to include these new settings
-    libWrapper.register('parallax-tiles', 'TileConfig.prototype._updateObject', async function (wrapped, ...args) {
+    libWrapper.register(MODULE_NAME, 'TileConfig.prototype._updateObject', async function (wrapped, ...args) {
         const [event, formData] = args;
         formData['flags.parallax-tiles.enableParallax'] = formData['enableParallax'] || false;
-        formData['flags.parallax-tiles.parallaxStrength'] = parseFloat(formData['parallaxStrength']) || 0.2;
+        formData['flags.parallax-tiles.parallaxStrength'] = parseFloat(formData['parallaxStrength']) || 0;
         return wrapped(event, formData);
     }, 'WRAPPER');
 });
 
 // Render tile configuration
 Hooks.on('renderTileConfig', (app, html, data) => {
-    const enableParallax = app.object.getFlag('parallax-tiles', 'enableParallax') || false;
-    const parallaxStrength = app.object.getFlag('parallax-tiles', 'parallaxStrength') || 0.2;
+    const enableParallax = app.object.getFlag(MODULE_NAME, 'enableParallax') || false;
+    const parallaxStrength = app.object.getFlag(MODULE_NAME, 'parallaxStrength') || 0;
 
     const parallaxOptions = `
         <div class="form-group">
@@ -48,59 +50,55 @@ Hooks.on('renderTileConfig', (app, html, data) => {
     html.find('div[data-tab="basic"]').append(parallaxOptions);
 });
 
-// Canvas ready hook
-Hooks.on('canvasReady', () => {
-    console.log('Parallax Tiles | Canvas ready');
+const initialPositions = new Map();
 
-    // Listen for canvas pan events
-    Hooks.on('canvasPan', (canvas, position) => {
-        onCameraMove(position);
-    });
-
-    // Listen for canvas zoom events
-    Hooks.on('canvasZoom', (canvas, position) => {
-        onCameraMove(position);
-    });
-});
-
-let previousCameraPosition = null;
-
-// Camera movement handler
-function onCameraMove(position) {
-    if (!previousCameraPosition) {
-        previousCameraPosition = { x: position.x, y: position.y };
-        return;
-    }
-
-    const currentCameraPosition = position;
-
-    // Calculate the delta (difference) in position
-    const deltaX = currentCameraPosition.x - previousCameraPosition.x;
-    const deltaY = currentCameraPosition.y - previousCameraPosition.y;
-
-    // Check if the tiles layer and placeables are available
+// Store initial positions. The center is used for offsets so that's what we're going to store here
+function storeInitialPositions() {
     if (canvas.tiles && canvas.tiles.placeables) {
-        // Loop through all tiles and adjust their position
         canvas.tiles.placeables.forEach(tile => {
-            const enableParallax = tile.document.getFlag('parallax-tiles', 'enableParallax');
-            let parallaxStrength = parseFloat(tile.document.getFlag('parallax-tiles', 'parallaxStrength'));
+            initialPositions.set(tile.id, { x: tile.center.x, y: tile.center.y});
+        });
+    }
+}
 
-            // Ensure parallaxStrength is a valid number and within the range -1 to 1
-            if (isNaN(parallaxStrength) || parallaxStrength < -1 || parallaxStrength > 1) {
-                parallaxStrength = 0.2;
-            }
+// Apply parallax effect based on camera position
+function applyParallaxEffect(position) {
+    if (canvas.tiles && canvas.tiles.placeables) {
+        canvas.tiles.placeables.forEach(tile => {
+            const enableParallax = tile.document.getFlag(MODULE_NAME, 'enableParallax');
+            let parallaxStrength = parseFloat(tile.document.getFlag(MODULE_NAME, 'parallaxStrength'));
 
-            if (enableParallax) {
-                // Calculate parallax offset based on delta position
-                const offsetX = deltaX * -parallaxStrength;
-                const offsetY = deltaY * -parallaxStrength;
-
-                // Apply the offset to the tile's mesh position
-                tile.mesh.position.set(tile.mesh.position.x - offsetX, tile.mesh.position.y - offsetY);
+            if (enableParallax && !isNaN(parallaxStrength) && parallaxStrength >= -1 && parallaxStrength <= 1) {
+                const initialPosition = initialPositions.get(tile.id);
+                if (!initialPosition) return;
+                const posX = initialPosition.x + ((position.x - initialPosition.x) * parallaxStrength);
+                const posY = initialPosition.y + ((position.y - initialPosition.y) * parallaxStrength);
+                tile.mesh.position.set(posX, posY);
             }
         });
     }
-
-    // Update the previous camera position
-    previousCameraPosition = { x: currentCameraPosition.x, y: currentCameraPosition.y };
 }
+
+// Canvas ready hook
+Hooks.on('canvasReady', () => {
+    console.log(`${MODULE_NAME} | Canvas ready`);
+
+    // Store initial positions and apply parallax effect initially
+    storeInitialPositions();
+    applyParallaxEffect(canvas.stage.pivot);
+    
+    // Listen for canvas pan
+    Hooks.on('canvasPan', (canvas, position) => {
+        applyParallaxEffect(position);
+    });
+    // This is a temporarly solution until I find something better.
+    // To initialize the parallax we need to wait for the canvas to be ready,
+    // but maybe we're not waiting enough for the initial pos to be stored.
+    Hooks.on('initializeVisionSources', () => {
+        applyParallaxEffect(canvas.stage.pivot);
+    });
+    Hooks.on('updateTile', () => {
+        storeInitialPositions();
+        applyParallaxEffect(canvas.stage.pivot);
+    });
+});
