@@ -50,40 +50,44 @@ Hooks.on('renderTileConfig', (app, html, data) => {
     html.find('div[data-tab="basic"]').append(parallaxOptions);
 });
 
-const initialPositions = new Map();
+const initialTilePositions = new Map();
 
 // Store initial positions. The center is used for offsets so that's what we're going to store here
-function storeInitialPositions() {
+function storeinitialTilePositions() {
     if (canvas.tiles && canvas.tiles.placeables) {
         canvas.tiles.placeables.forEach(tile => {
-            initialPositions.set(tile.id, { x: tile.center.x, y: tile.center.y});
+            initialTilePositions.set(tile.id, { x: tile.center.x, y: tile.center.y});
         });
     }
 }
 
 // Apply parallax effect based on camera position
-function applyParallaxEffect(position) {
+function applyParallaxEffect(cameraPosition) {
     if (canvas.tiles && canvas.tiles.placeables) {
         canvas.tiles.placeables.forEach(tile => {
             const enableParallax = tile.document.getFlag(MODULE_NAME, 'enableParallax');
             let parallaxStrength = parseFloat(tile.document.getFlag(MODULE_NAME, 'parallaxStrength'));
 
             if (enableParallax && !isNaN(parallaxStrength) && parallaxStrength >= -1 && parallaxStrength <= 1) {
-                const initialPosition = initialPositions.get(tile.id);
-                if (!initialPosition) return;
+                const initialTilePosition = initialTilePositions.get(tile.id);
+                if (!initialTilePosition) return;
 
-                // Position
-                const posX = initialPosition.x + ((position.x - initialPosition.x) * parallaxStrength);
-                const posY = initialPosition.y + ((position.y - initialPosition.y) * parallaxStrength);
-                tile.mesh.position.set(posX, posY);
-                
                 // Scale
-                
                 const baseScale = 0.8333333333333334; // Original tile scale when no zoom is applied
-                const currentScale = position.scale || canvas.scene.initial.scale;
+                const currentScale = canvas.scene._viewPosition.scale || canvas.scene.initial.scale;
                 const scaleRatio = canvas.scene.initial.scale / currentScale;
                 const tileScale = baseScale * Math.pow(scaleRatio, parallaxStrength);
                 tile.mesh.scale.set(tileScale, tileScale);
+                // Position
+                if(parallaxStrength === 1){
+                    const posX = initialTilePosition.x + (cameraPosition.x - initialTilePosition.x)
+                    const posY = initialTilePosition.y + (cameraPosition.y - initialTilePosition.y)
+                    tile.mesh.position.set(posX, posY);
+                } else {
+                    const posX = initialTilePosition.x + (((cameraPosition.x - initialTilePosition.x) * tileScale ) * (parallaxStrength));
+                    const posY = initialTilePosition.y + (((cameraPosition.y - initialTilePosition.y) * tileScale ) * (parallaxStrength));
+                    tile.mesh.position.set(posX, posY);
+                }
             }
         });
     }
@@ -94,7 +98,7 @@ Hooks.on('canvasReady', () => {
     console.log(`${MODULE_NAME} | Canvas ready`);
 
     // Store initial positions and apply parallax effect initially
-    storeInitialPositions();
+    storeinitialTilePositions();
     applyParallaxEffect(canvas.stage.pivot);
     
     // Listen for canvas pan
@@ -108,7 +112,7 @@ Hooks.on('canvasReady', () => {
         applyParallaxEffect(canvas.stage.pivot);
     });
     Hooks.on('updateTile', () => {
-        storeInitialPositions();
+        storeinitialTilePositions();
         applyParallaxEffect(canvas.stage.pivot);
     });
 });
