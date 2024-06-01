@@ -5,3 +5,18 @@ Configuration is availabe on a tile's configuration.
 
 Install file:
 https://github.com/ManaHime/foundryvtt-parallax-tiles/releases/latest/download/module.json
+
+CHANGLOG:
+
+0.0.4:
+- Fix zoom offset
+
+0.0.3:
+- Add support for zoom
+
+0.0.2:
+- Change the parallax calculation logic so that it more closely match the correct position of a tile.
+- A tile with a parallax strength of 1 will now center to the camera.
+
+0.0.1:
+Initial release
